@@ -11,7 +11,6 @@
 namespace WooCommerce\Facebook\Admin;
 
 use Automattic\WooCommerce\Admin\Features\Features as WooAdminFeatures;
-use Automattic\WooCommerce\Admin\Features\Navigation\Menu as WooAdminMenu;
 use WooCommerce\Facebook\Admin\Settings_Screens;
 use WooCommerce\Facebook\Admin\Settings_Screens\Connection;
 use WooCommerce\Facebook\Framework\Helper;
@@ -39,13 +38,6 @@ class Settings {
 
 	/** @var Abstract_Settings_Screen[] */
 	private $screens;
-
-	/**
-	 * Whether the new Woo nav should be used.
-	 *
-	 * @var bool
-	 */
-	public $use_woo_nav;
 
 	/**
 	 * Settings constructor.
@@ -89,22 +81,8 @@ class Settings {
 	 * @since 2.0.0
 	 */
 	public function add_menu_item() {
-		$root_menu_item       = 'woocommerce';
-		$is_marketing_enabled = false;
-		$this->use_woo_nav    = class_exists( WooAdminFeatures::class )
-			&& class_exists( WooAdminMenu::class )
-			&& WooAdminFeatures::is_enabled( 'navigation' );
-		if ( Compatibility::is_enhanced_admin_available() ) {
-			if ( class_exists( WooAdminFeatures::class ) ) {
-				$is_marketing_enabled = WooAdminFeatures::is_enabled( 'marketing' );
-			} else {
-				$is_marketing_enabled = is_callable( '\Automattic\WooCommerce\Admin\Loader::is_feature_enabled' )
-					&& \Automattic\WooCommerce\Admin\Loader::is_feature_enabled( 'marketing' );
-			}
-			if ( $is_marketing_enabled ) {
-				$root_menu_item = 'woocommerce-marketing';
-			}
-		}
+		$root_menu_item = $this->root_menu_item();
+
 		add_submenu_page(
 			$root_menu_item,
 			__( 'Facebook for WooCommerce', 'facebook-for-woocommerce' ),
@@ -114,36 +92,7 @@ class Settings {
 			[ $this, 'render' ],
 			5
 		);
-		$this->connect_to_enhanced_admin( $is_marketing_enabled ? 'marketing_page_wc-facebook' : 'woocommerce_page_wc-facebook' );
-		$this->register_woo_nav_menu_items();
-
-		if ( $is_marketing_enabled ) {
-			$this->add_fb_product_sets_to_marketing_menu();
-		}
-	}
-
-	/**
-	 * Checks for connection and if established adds Facebook Product Sets taxonomy page to the Marketing menu.
-	 *
-	 * @since 2.6.29
-	 */
-	private function add_fb_product_sets_to_marketing_menu() {
-		$is_connected = facebook_for_woocommerce()->get_connection_handler()->is_connected();
-
-		// If a connection is not established, do not add Facebook Product Sets to Marketing menu.
-		if ( ! $is_connected ) {
-			return;
-		}
-
-		add_submenu_page(
-			'woocommerce-marketing',
-			esc_html__( 'Facebook Product Sets', 'facebook-for-woocommerce' ),
-			esc_html__( 'Facebook Product Sets', 'facebook-for-woocommerce' ),
-			'manage_woocommerce',
-			admin_url( self::SUBMENU_PAGE_ID ),
-			'',
-			10
-		);
+		$this->connect_to_enhanced_admin( $this->is_marketing_enabled() ? 'marketing_page_wc-facebook' : 'woocommerce_page_wc-facebook' );
 	}
 
 	/**
@@ -154,15 +103,47 @@ class Settings {
 	 * @return string
 	 */
 	public function set_parent_and_submenu_file( $parent_file ) {
-		global $submenu_file, $current_screen;
+		global $pagenow, $submenu_file;
 
-		// The Facebook Product Set is now a submenu of woocommerce-marketing. Hence, we are overriding the $parent_file and $submenu_file when accessing the fb_product_set taxonomy page.
-		if ( isset( $current_screen->taxonomy ) && 'fb_product_set' === $current_screen->taxonomy ) {
-			$parent_file  = 'woocommerce-marketing';
-			$submenu_file = admin_url( self::SUBMENU_PAGE_ID ); //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$root_menu_item = $this->root_menu_item();
+
+		if ( 'edit-tags.php' === $pagenow || 'term.php' === $pagenow ) {
+			if ( isset( $_GET['taxonomy'] ) && 'fb_product_set' === $_GET['taxonomy'] ) { //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$parent_file  = $root_menu_item;
+				$submenu_file = self::PAGE_ID; //phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+			}
 		}
 
 		return $parent_file;
+	}
+
+	/**
+	 * Get root menu item.
+	 *
+	 * @since 3.2.10
+	 * return string Root menu item slug.
+	 */
+	public function root_menu_item() {
+		if ( $this->is_marketing_enabled() ) {
+			return 'woocommerce-marketing';
+		}
+
+		return 'woocommerce';
+	}
+
+	/**
+	 * Check if marketing feature is enabled.
+	 *
+	 * @since 3.2.10
+	 * return bool Is marketing enabled.
+	 */
+	public function is_marketing_enabled() {
+		if ( class_exists( WooAdminFeatures::class ) ) {
+			return WooAdminFeatures::is_enabled( 'marketing' );
+		}
+
+		return is_callable( '\Automattic\WooCommerce\Admin\Loader::is_feature_enabled' )
+				&& \Automattic\WooCommerce\Admin\Loader::is_feature_enabled( 'marketing' );
 	}
 
 	/**
@@ -218,13 +199,11 @@ class Settings {
 		$screen = $this->get_screen( $current_tab );
 		?>
 		<div class="wrap woocommerce">
-			<?php if ( ! $this->use_woo_nav ) : ?>
-				<nav class="nav-tab-wrapper woo-nav-tab-wrapper">
-					<?php foreach ( $tabs as $id => $label ) : ?>
-						<a href="<?php echo esc_html( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . esc_attr( $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
-					<?php endforeach; ?>
-				</nav>
-			<?php endif; ?>
+			<nav class="nav-tab-wrapper woo-nav-tab-wrapper">
+				<?php foreach ( $tabs as $id => $label ) : ?>
+					<a href="<?php echo esc_html( admin_url( 'admin.php?page=' . self::PAGE_ID . '&tab=' . esc_attr( $id ) ) ); ?>" class="nav-tab <?php echo $current_tab === $id ? 'nav-tab-active' : ''; ?>"><?php echo esc_html( $label ); ?></a>
+				<?php endforeach; ?>
+			</nav>
 			<?php facebook_for_woocommerce()->get_message_handler()->show_messages(); ?>
 			<?php if ( $screen ) : ?>
 				<h1 class="screen-reader-text"><?php echo esc_html( $screen->get_title() ); ?></h1>
@@ -332,39 +311,5 @@ class Settings {
 		 * @param array $tabs tab data, as $id => $label
 		 */
 		return (array) apply_filters( 'wc_facebook_admin_settings_tabs', $tabs, $this );
-	}
-
-	/**
-	 * Register nav items for new Woo nav.
-	 *
-	 * @since 2.3.3
-	 */
-	private function register_woo_nav_menu_items() {
-		if ( ! $this->use_woo_nav ) {
-			return;
-		}
-		WooAdminMenu::add_plugin_category(
-			array(
-				'id'         => 'facebook-for-woocommerce',
-				'title'      => __( 'Facebook', 'facebook-for-woocommerce' ),
-				'capability' => 'manage_woocommerce',
-			)
-		);
-		$order = 1;
-		foreach ( $this->get_screens() as $screen_id => $screen ) {
-			$url = $screen instanceof Settings_Screens\Product_Sets
-				? 'edit-tags.php?taxonomy=fb_product_set&post_type=product'
-				: 'wc-facebook&tab=' . $screen->get_id();
-			WooAdminMenu::add_plugin_item(
-				array(
-					'id'     => 'facebook-for-woocommerce-' . $screen->get_id(),
-					'parent' => 'facebook-for-woocommerce',
-					'title'  => $screen->get_label(),
-					'url'    => $url,
-					'order'  => $order,
-				)
-			);
-			++$order;
-		}
 	}
 }

@@ -1,5 +1,16 @@
 *** Facebook for WooCommerce Changelog ***
 
+= 3.2.10 - 2024-09-30 =
+* Update -  Remove Marketing Products Sets menu entry.
+
+= 3.2.9 - 2024-09-12 =
+* Break - Removes WooCommerce navigation items.
+* Tweak - WC 9.3 compatibility.
+
+= 3.2.8 - 2024-09-03 =
+* Update - Access Token retrieval procedure.
+* Update - Use get_title() for content_name to match catalog name.
+
 = 3.2.7 - 2024-08-13 =
 * Dev - Updated `phpcs` ruleset.
 * Fix - Update failing due to undefined constant error in Lifecycle.
