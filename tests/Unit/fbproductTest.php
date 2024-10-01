@@ -105,31 +105,93 @@ class fbproductTest extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test quantity_to_sell_on_facebook is populated when manage stock is enabled
+	 * Test quantity_to_sell_on_facebook is populated when manage stock is enabled for simple product
 	 * @return void
 	 */
-	public function test_quantity_to_sell_on_facebook_when_manage_stock_is_on() {
-		$product = WC_Helper_Product::create_simple_product();
-		$product->set_manage_stock('yes');
-		$product->set_stock_quantity(128);
+	public function test_quantity_to_sell_on_facebook_when_manage_stock_is_on_for_simple_product() {
+		$woo_product = WC_Helper_Product::create_simple_product();
+		$woo_product->set_manage_stock('yes');
+		$woo_product->set_stock_quantity(128);
 
-		$facebook_product = new \WC_Facebook_Product( $product );
-		$data = $facebook_product->prepare_product();
+		$fb_product = new \WC_Facebook_Product( $woo_product );
+		$data = $fb_product->prepare_product();
 
 		$this->assertEquals( $data['quantity_to_sell_on_facebook'], 128 );
 	}
 
 	/**
-	 * Test quantity_to_sell_on_facebook is not populated when manage stock is disabled
+	 * Test quantity_to_sell_on_facebook is not populated when manage stock is disabled for simple product
 	 * @return void
 	 */
-	public function test_quantity_to_sell_on_facebook_when_manage_stock_is_off() {
-		$product = WC_Helper_Product::create_simple_product();
-		$product->set_manage_stock('no');
+	public function test_quantity_to_sell_on_facebook_when_manage_stock_is_off_for_simple_product() {
+		$woo_product = WC_Helper_Product::create_simple_product();
+		$woo_product->set_manage_stock('no');
 
-		$facebook_product = new \WC_Facebook_Product( $product );
-		$data = $facebook_product->prepare_product();
+		$fb_product = new \WC_Facebook_Product( $woo_product );
+		$data = $fb_product->prepare_product();
 
 		$this->assertEquals(isset($data['quantity_to_sell_on_facebook']), false);
+	}
+
+	/**
+	 * Test quantity_to_sell_on_facebook is populated when manage stock is enabled for variable product
+	 * @return void
+	 */
+	public function test_quantity_to_sell_on_facebook_when_manage_stock_is_on_for_variable_product() {
+		$woo_product = WC_Helper_Product::create_variation_product();
+		$woo_product->set_manage_stock('yes');
+		$woo_product->set_stock_quantity(128);
+		
+		$woo_variation = wc_get_product($woo_product->get_children()[0]);
+		$woo_variation->set_manage_stock('yes');
+		$woo_variation->set_stock_quantity(23);		
+
+		$fb_parent_product = new \WC_Facebook_Product($woo_product);
+		$fb_product = new \WC_Facebook_Product( $woo_variation, $fb_parent_product );
+
+		$data = $fb_product->prepare_product();
+
+		$this->assertEquals( $data['quantity_to_sell_on_facebook'], 23 );
+	}
+
+	/**
+	 * Test quantity_to_sell_on_facebook is not populated when manage stock is disabled for variable product and disabled for its parent
+	 * @return void
+	 */
+	public function test_quantity_to_sell_on_facebook_when_manage_stock_is_off_for_variable_product_and_off_for_parent() {
+		$woo_product = WC_Helper_Product::create_variation_product();
+		$woo_product->set_manage_stock('no');
+		
+		$woo_variation = wc_get_product($woo_product->get_children()[0]);
+		$woo_product->set_manage_stock('no');
+
+		$fb_parent_product = new \WC_Facebook_Product($woo_product);
+		$fb_product = new \WC_Facebook_Product( $woo_variation, $fb_parent_product );
+
+		$data = $fb_product->prepare_product();
+
+		$this->assertEquals(isset($data['quantity_to_sell_on_facebook']), false);
+	}
+
+	/**
+	 * Test quantity_to_sell_on_facebook is not populated when manage stock is disabled for variable product and enabled for its parent
+	 * @return void
+	 */
+	public function test_quantity_to_sell_on_facebook_when_manage_stock_is_off_for_variable_product_and_on_for_parent() {
+		$woo_product = WC_Helper_Product::create_variation_product();
+		$woo_product->set_manage_stock('yes');
+		$woo_product->set_stock_quantity(128);
+		$woo_product->save();
+
+		$woo_variation = wc_get_product($woo_product->get_children()[0]);
+		$woo_variation->set_manage_stock('no');
+		$woo_variation->save();
+
+		$fb_parent_product = new \WC_Facebook_Product($woo_product);
+		$fb_product = new \WC_Facebook_Product( $woo_variation, $fb_parent_product );
+		
+		$data = $fb_product->prepare_product();
+
+		$this->assertEquals( $data['quantity_to_sell_on_facebook'], 128 );
 	}
 }
