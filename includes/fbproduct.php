@@ -715,9 +715,14 @@ class WC_Facebook_Product {
 			$product_data = $this->apply_enhanced_catalog_fields_from_attributes( $product_data, $google_product_category );
 		}
 
-		// add the Commerce values (only stock quantity for the moment)
-		if ( Products::is_product_ready_for_commerce( $this->woo_product ) ) {
+		// Add stock quantity if the product is stock managed
+		if ( $this->woo_product->managing_stock() ) {
 			$product_data['quantity_to_sell_on_facebook'] = (int) max( 0, $this->woo_product->get_stock_quantity() );
+		} else if ($this->woo_product->is_type( 'variation' )) {
+			$parent_product = wc_get_product( $this->woo_product->get_parent_id());
+			if ( $parent_product && $parent_product->managing_stock()) {	
+				$product_data['quantity_to_sell_on_facebook'] = (int) max( 0, $parent_product->get_stock_quantity() );
+			}
 		}
 
 		// Only use checkout URLs if they exist.
