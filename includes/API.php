@@ -516,6 +516,15 @@ class API extends Base {
 		return $this->perform_request( $request );
 	}
 
+	/**
+	 * TODO
+	 */
+	public function create_feed( string $product_catalog_id, array $data ) {
+		$request = new API\ProductCatalog\ProductFeeds\Create\Request( $product_catalog_id, $data );
+		$this->set_response_handler( API\ProductCatalog\ProductFeeds\Create\Response::class );
+		return $this->perform_request( $request );
+	}
+
 
 	/**
 	 * @param string $product_feed_upload_id
@@ -526,6 +535,15 @@ class API extends Base {
 	public function read_upload( string $product_feed_upload_id ) {
 		$request = new API\ProductCatalog\ProductFeedUploads\Read\Request( $product_feed_upload_id );
 		$this->set_response_handler( API\ProductCatalog\ProductFeedUploads\Read\Response::class );
+		return $this->perform_request( $request );
+	}
+
+	/**
+	 * TODO
+	 */
+	public function create_upload( string $product_feed_id, array $data ) {
+		$request = new API\ProductCatalog\ProductFeedUploads\Create\Request( $product_feed_id, $data );
+		$this->set_response_handler( API\ProductCatalog\ProductFeedUploads\Create\Response::class );
 		return $this->perform_request( $request );
 	}
 
