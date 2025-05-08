@@ -7,11 +7,14 @@
  * @package FacebookCommerce
  */
 
-namespace WooCommerce\Facebook\Feed;
+namespace WooCommerce\Facebook\Feed\ShippingProfiles;
 
 defined( 'ABSPATH' ) || exit;
 
 use Automattic\WooCommerce\ActionSchedulerJobFramework\Proxies\ActionScheduler;
+use WooCommerce\Facebook\Feed\AbstractFeed;
+use WooCommerce\Facebook\Feed\CsvFeedFileWriter;
+use WooCommerce\Facebook\Feed\FeedManager;
 use WC_Shipping_Zones;
 
 /**

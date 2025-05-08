@@ -8,9 +8,13 @@
  * @package FacebookCommerce
  */
 
-namespace WooCommerce\Facebook\Feed;
+namespace WooCommerce\Facebook\Feed\ShippingProfiles;
 
 defined( 'ABSPATH' ) || exit;
+
+use WooCommerce\Facebook\Feed\AbstractFeedHandler;
+use WooCommerce\Facebook\Feed\AbstractFeedFileWriter;
+use WooCommerce\Facebook\Feed\FeedManager;
 
 /**
  * Shipping Profiles Feed Handler class

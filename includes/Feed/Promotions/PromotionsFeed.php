@@ -8,11 +8,14 @@
  * @package FacebookCommerce
  */
 
-namespace WooCommerce\Facebook\Feed;
+namespace WooCommerce\Facebook\Feed\Promotions;
 
 defined( 'ABSPATH' ) || exit;
 
 use Automattic\WooCommerce\ActionSchedulerJobFramework\Proxies\ActionScheduler;
+use WooCommerce\Facebook\Feed\AbstractFeed;
+use WooCommerce\Facebook\Feed\CsvFeedFileWriter;
+use WooCommerce\Facebook\Feed\FeedManager;
 
 /**
  * Promotions Feed Class

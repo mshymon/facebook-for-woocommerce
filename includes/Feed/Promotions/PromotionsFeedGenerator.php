@@ -8,9 +8,12 @@
  * @package FacebookCommerce
  */
 
-namespace WooCommerce\Facebook\Feed;
+namespace WooCommerce\Facebook\Feed\Promotions;
 
 defined( 'ABSPATH' ) || exit;
+
+use WooCommerce\Facebook\Feed\FeedGenerator;
+use WooCommerce\Facebook\Feed\FeedUploadUtils;
 
 /**
  * Promotions Feed Generator Class

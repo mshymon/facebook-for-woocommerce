@@ -8,9 +8,12 @@
  * @package FacebookCommerce
  */
 
-namespace WooCommerce\Facebook\Feed;
+namespace WooCommerce\Facebook\Feed\ShippingProfiles;
 
 defined( 'ABSPATH' ) || exit;
+
+use WooCommerce\Facebook\Feed\FeedGenerator;
+use WooCommerce\Facebook\Feed\FeedUploadUtils;
 
 /**
  * Class ShippingProfilesFeedGenerator

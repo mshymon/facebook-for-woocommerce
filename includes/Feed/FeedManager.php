@@ -10,6 +10,13 @@
 
 namespace WooCommerce\Facebook\Feed;
 
+defined( 'ABSPATH' ) || exit;
+
+use WooCommerce\Facebook\Feed\Promotions\PromotionsFeed;
+use WooCommerce\Facebook\Feed\RatingsAndReviews\RatingsAndReviewsFeed;
+use WooCommerce\Facebook\Feed\ShippingProfiles\ShippingProfilesFeed;
+use WooCommerce\Facebook\Feed\NavigationMenuFeed;
+
 /**
  * Responsible for creating and managing feeds.
  * Global manipulations of the feed such as updating feed and upload ID to be made through this class.

@@ -8,9 +8,14 @@
  * @package FacebookCommerce
  */
 
-namespace WooCommerce\Facebook\Feed;
+namespace WooCommerce\Facebook\Feed\RatingsAndReviews;
 
 defined( 'ABSPATH' ) || exit;
+
+use WooCommerce\Facebook\Feed\AbstractFeedHandler;
+use WooCommerce\Facebook\Feed\AbstractFeedFileWriter;
+use WooCommerce\Facebook\Feed\FeedManager;
+use WooCommerce\Facebook\Feed\FeedUploadUtils;
 
 /**
  * Ratings and Reviews Feed Handler class
